@@ -3,73 +3,62 @@ import { Button } from 'components/Button/Button';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { Loader } from 'components/Loader/Loader';
 import { Modal } from 'components/Modal/Modal';
-
-import { animateScroll } from 'react-scroll';
 import { getImg } from 'services/api';
 import { GalleryList } from './ImageGallery.styled';
 
-function ImageGallery() {
+const ImageGallery = ({ value }) => {
   const [images, setImages] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [status, setStatus] = useState('idle');
   const [isLoad, setIsLoad] = useState(false);
   const [pages, setPages] = useState(1);
   const [viewImage, setViewImage] = useState('');
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchImages = async (value, pages) => {
-      try {
-        const response = await getImg(value, pages);
-
-        if (response.status === 200) {
-          const newImages = [...images, ...response.data.hits];
-          setImages(newImages);
-          setStatus('resolved');
-          setIsLoad(pages < Math.ceil(response.data.totalHits / 12));
-        } else {
-          setError('Error');
-          setStatus('error');
-        }
-      } catch (error) {
-        setError(error);
-        setStatus('error');
-      }
-    };
-
-    if (status === 'pending') {
+    if (value) {
       setImages([]);
+      setStatus('pending');
       setPages(1);
       setIsLoad(true);
-      fetchImages();
+      fetchImages(value, 1);
     }
+  }, [value]);
 
-    if (pages !== 1) {
-      fetchImages();
+  useEffect(() => {
+    if (pages > 1) {
+      fetchImages(value, pages);
     }
-  }, [images, status, pages]);
+  }, [pages]);
 
-  const handleLoadMore = () => {
-    setPages(pages + 1);
-    scrollToBottom();
+  const onLoadMore = () => {
+    setPages(prevPages => prevPages + 1);
   };
 
-  const handleImageClick = (id) => {
-    const image = images.find((img) => img.id === id);
-    setViewImage(image);
+  const onImageClick = id => {
+    const viewImage = images.find(img => img.id === id);
+    setViewImage(viewImage);
     setModalIsOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const onCloseModal = () => {
     setModalIsOpen(false);
   };
 
-  const scrollToBottom = () => {
-    animateScroll.scrollToBottom({
-      duration: 1600,
-      delay: 10,
-      smooth: 'linear',
-    });
+  const fetchImages = async (value, pages) => {
+    try {
+      const images = await getImg(value, pages);
+
+      if (images.status === 200) {
+        setImages(prevImages => [...prevImages, ...images.data.hits]);
+        setStatus('resolved');
+        setIsLoad(pages < Math.ceil(images.data.totalHits / 12));
+      } else {
+        return Promise.reject('Error');
+      }
+    } catch (error) {
+      setStatus('error');
+      console.log(error);
+    }
   };
 
   const shouldRenderLoadMoreButton = images.length > 0 && isLoad;
@@ -82,21 +71,24 @@ function ImageGallery() {
     return (
       <>
         <GalleryList className="gallery">
-          {images.map((item) => (
+          {images.map(item => (
             <ImageGalleryItem
               data={item}
               key={item.id}
-              onImageClick={handleImageClick}
+              onImageClick={onImageClick}
             />
           ))}
         </GalleryList>
 
         {shouldRenderLoadMoreButton && (
-          <Button onLoadMore={handleLoadMore} isLoad={isLoad} />
+          <Button onLoadMore={onLoadMore} isLoad={isLoad} />
         )}
 
         {modalIsOpen && (
-          <Modal viewImage={viewImage} onCloseModal={handleCloseModal}>
+          <Modal
+            viewImage={viewImage}
+            onCloseModal={onCloseModal}
+          >
             <img src={viewImage.largeImageURL} alt={viewImage.tags} />
           </Modal>
         )}
@@ -110,7 +102,9 @@ function ImageGallery() {
       </div>
     );
   }
-}
+
+  return null;
+};
 
 export default ImageGallery;
 
