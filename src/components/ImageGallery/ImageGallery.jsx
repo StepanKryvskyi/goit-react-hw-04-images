@@ -28,7 +28,7 @@ const ImageGallery = ({ value }) => {
     if (pages > 1) {
       fetchImages(value, pages);
     }
-  }, [pages]);
+  }, [value, pages]);
 
   const onLoadMore = () => {
     setPages(prevPages => prevPages + 1);
