@@ -1,14 +1,12 @@
-
-
 import React, { useState } from 'react';
-import {Searchbar} from './Searchbar/Searchbar';
+import { Searchbar } from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import { Container } from './App.styled';
 
 function App() {
   const [value, setValue] = useState('');
 
-  const handleSubmit = (value) => {
+  const handleSubmit = value => {
     setValue(value);
   };
 
@@ -21,27 +19,3 @@ function App() {
 }
 
 export default App;
-
-
-// import { Component } from 'react';
-// import { Searchbar } from './Searchbar/Searchbar';
-
-// import { ImageGallery } from './ImageGallery/ImageGallery';
-// import { Container } from './App.styled';
-
-// export class App extends Component {
-//   state = {
-//     value: '',
-//   };
-//   onSubmit = (value) => {
-//     this.setState({ value: value });
-//   };
-//   render() {
-//     return (
-//       <Container>
-//         <Searchbar onSubmit={this.onSubmit} />
-//         <ImageGallery value={this.state.value} />
-//       </Container>
-//     );
-//   }
-// }
